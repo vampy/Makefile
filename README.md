@@ -8,11 +8,13 @@
   - [Using Wildcard Characters (Section 4.2)](#using-wildcard-characters-section-42)
   - [The Wildcard Function (Section 4.2.3)](#the-wildcard-function-section-423)
   - [The vpath Directive (Section 4.3.2)](#the-vpath-directive-section-432)
-  - [The all target (Section 4.4)](#the-all-target-section-44)
-  - [Multiple targets (Section 4.8)](#multiple-targets-section-48)
-  - [Multiple targets via wildcards (Section 4.8)](#multiple-targets-via-wildcards-section-48)
-  - [Static Pattern Rules (Section 4.10)](#static-pattern-rules-section-410)
-  - [Static Pattern Rules and Filter (Section 4.10)](#static-pattern-rules-and-filter-section-410)
+  - [Targets](#targets)
+    - [The all target (Section 4.4)](#the-all-target-section-44)
+    - [Multiple targets `$@` (Section 4.8)](#multiple-targets--section-48)
+    - [Multiple targets via wildcards `%` (Section 4.8)](#multiple-targets-via-wildcards--section-48)
+  - [Static Patterns](#static-patterns)
+    - [Static Pattern Rules (Section 4.10)](#static-pattern-rules-section-410)
+    - [Static Pattern Rules and Filter (Section 4.10)](#static-pattern-rules-and-filter-section-410)
   - [Double-Colon Rules (Section 4.11)](#double-colon-rules-section-411)
   - [Command Echoing/Silencing (Section 5.1)](#command-echoingsilencing-section-51)
   - [Command Execution (Section 5.2)](#command-execution-section-52)
@@ -24,32 +26,34 @@
   - [Recursive use of make (Section 5.6)](#recursive-use-of-make-section-56)
   - [Use `export` for recursive make (Section 5.6)](#use-export-for-recursive-make-section-56)
   - [Another export example (Section 5.6)](#another-export-example-section-56)
-  - [`EXPORT_ALL_VARIABLES` (Section 5.6)](#export_all_variables-section-56)
-  - [Variables Reference (Section 6.1)](#variables-reference-section-61)
-  - [Variables Flavours (Section 6.2)](#variables-flavours-section-62)
-  - [Variables Expansion (Section 6.2)](#variables-expansion-section-62)
-  - [Variables and `?=` (Section 6.2)](#variables-and--section-62)
-  - [Variables: watch out for end-of-line spaces (Section 6.2)](#variables-watch-out-for-end-of-line-spaces-section-62)
-  - [Variables: Text replacement (Section 6.3)](#variables-text-replacement-section-63)
-  - [Variables: Text replacement (Section 6.3)](#variables-text-replacement-section-63-1)
-  - [Undefined Variables (Section 6.5)](#undefined-variables-section-65)
-  - [Variable appending (Section 6.6)](#variable-appending-section-66)
+  - [Variables](#variables)
+    - [`EXPORT_ALL_VARIABLES` (Section 5.6)](#export_all_variables-section-56)
+    - [Variables Reference (Section 6.1)](#variables-reference-section-61)
+    - [Variables Types (Section 6.2)](#variables-types-section-62)
+    - [Variables Expansion (Section 6.2)](#variables-expansion-section-62)
+    - [Variables Conditional set with `?=` (Section 6.2)](#variables-conditional-set-with--section-62)
+    - [Variables: watch out for end-of-line spaces (Section 6.2)](#variables-watch-out-for-end-of-line-spaces-section-62)
+    - [Variables: Text replacement `$(var:a=b)` (Section 6.3)](#variables-text-replacement-varab-section-63)
+    - [Variables: Text replacement % (Section 6.3)](#variables-text-replacement--section-63)
+    - [Undefined Variables (Section 6.5)](#undefined-variables-section-65)
+    - [Variable appending (Section 6.6)](#variable-appending-section-66)
+    - [Target-specific variables (Section 6.10)](#target-specific-variables-section-610)
+    - [Pattern-specific variables (Section 6.11)](#pattern-specific-variables-section-611)
+    - [Check if a variable is empty (Section 7.2)](#check-if-a-variable-is-empty-section-72)
+    - [`ifdef` (Section 7.2)](#ifdef-section-72)
+    - [Conditional if/else (Section 7.1)](#conditional-ifelse-section-71)
+    - [Automatic Variables: `$@`, `$^`, `$?`, etc (Section 10.5)](#automatic-variables----etc-section-105)
   - [Command line arguments and `override` (Section 6.7)](#command-line-arguments-and-override-section-67)
   - [List of commands and `define` (Section 6.8)](#list-of-commands-and-define-section-68)
-  - [Target-specific variables (Section 6.10)**](#target-specific-variables-section-610)
-  - [Pattern-specific variables (Section 6.11)](#pattern-specific-variables-section-611)
-  - [Conditional if/else (Section 7.1)](#conditional-ifelse-section-71)
-  - [Check if a variable is empty (Section 7.2)](#check-if-a-variable-is-empty-section-72)
   - [Testing make flags with `findstring` and `MAKEFLAG`(Section 7.3)](#testing-make-flags-with-findstring-and-makeflagsection-73)
-  - [Functions (Section 8.1)](#functions-section-81)
-  - [Functions (Section 8.1)](#functions-section-81-1)
-  - [Functions (Section 8.1)](#functions-section-81-2)
-  - [The if function (Section 8.5)](#the-if-function-section-85)
-  - [The call function (Section 8.6)](#the-call-function-section-86)
-  - [The shell function (Section 8.8)](#the-shell-function-section-88)
+  - [Functions](#functions)
+    - [Functions (Section 8.1)](#functions-section-81)
+    - [The foreach function (Section 8.4)](#the-foreach-function-section-84)
+    - [The if function (Section 8.5)](#the-if-function-section-85)
+    - [The call function (Section 8.6)](#the-call-function-section-86)
+    - [The shell function (Section 8.8)](#the-shell-function-section-88)
   - [Arguments to make (Section 9)](#arguments-to-make-section-9)
   - [Implicit Rules (Section 10)](#implicit-rules-section-10)
-  - [Automatic Variables (Section 10.5)](#automatic-variables-section-105)
 
 # [Makefile Tutorial](https://en.wikipedia.org/wiki/Makefile)
 
@@ -67,12 +71,14 @@ targets : prerequisites
    command
    command
 ```
-- The **targets** are file names, separated by spaces. Typically, there is only one per rule.
-- The **prerequisites** (also called **dependencies**) are also file names, separated by spaces. These files need to exist before the commands for the target are run.
-- The **commands** are a series of steps typically used to make the target(s). These **need to start with a \<tab\> character***, not spaces.
+- The **targets** are  usually file names that are generated by a program, separated by spaces. Typically, there is only one per rule. Examples of targets are executable or object files. A target can also be the name of an action to carry out, such as "clean".
+- The **prerequisites** (also called **dependencies**) are also file names, separated by spaces, used as input to create the target. A target often depends on several files. However, the rule that specifies a recipe for the target need not have any prerequisites. For example, the rule containing the delete command associated with the target "clean" does not have prerequisites.
+- The **commands** are a series of steps typically used to make the target(s). These **need to start with a \<tab\> character**, not spaces.
 
 ## Make Overview
-The main use of Make is to list out a set of directions to compile some c or c++ files, although it can solve other similar problems. The user gives Make some *goal*, say "generate the file hello". The Makefile specifies how to make this file. Here's an example:
+The main use of Make is to list out a set of directions to compile some c or c++ files, although it can solve other similar problems. The user gives Make some *goal*, say "generate the file hello".
+
+The Makefile specifies how to make this file. Here's an example:
 
 ```make
 # Since the blah target is first, it is the default target and will be run when we run "make"
@@ -90,7 +96,9 @@ clean:
 ```
 
 ## Running the Examples
-I made a quick [video](/screencasts.html) to show how to run these examples. You'll need a terminal and "make" installed. For each example, put the contents in a file called `Makefile`, and in that directory run the command `make`. Here is the output of running the above example:
+A makefile is executed with the `make` command, e.g. `make [options] [target1 target2 ...]`. By default, when make looks for the makefile, if a makefile name was not included as a parameter, it tries the following names, in order: `makefile` and `Makefile`.
+
+You'll need a terminal and `make` installed. For each example, put the contents in a file called `Makefile`, and in that directory run the command `make`. Here is the output of running the above example:
 ```bash
 $ make
 echo "int main() { return 0; }" > blah.c
@@ -267,7 +275,8 @@ clean:
 	rm -f some_binary
 ```
 
-## The all target (Section 4.4)
+## Targets
+### The all target (Section 4.4)
 Making multiple targets and you want all of them to run? Make a `all` target and designate it as `.PHONY`
 ```make
 all: one two three
@@ -284,11 +293,11 @@ clean:
 	rm -f one two three
 ```
 
-## Multiple targets (Section 4.8)
+### Multiple targets `$@` (Section 4.8)
 When there are multiple targets for a rule, the commands will be run for each target
 `$@` is a *automatic variable* that contains the target name.
-```make
 
+```make
 all: f1.o f2.o
 
 f1.o f2.o:
@@ -300,8 +309,8 @@ f1.o f2.o:
 # 	echo $@
 ```
 
-## Multiple targets via wildcards (Section 4.8)
-We can use the wildcard % in targets, that captures zero or more of any character. Note we do not use *.o, because that is just the string *.o, which might be useful in the commands,
+### Multiple targets via wildcards `%` (Section 4.8)
+We can use the wildcard `%` in targets, that captures zero or more of any character. Note we do not use `*.o`, because that is just the string `*.o`, which might be useful in the commands,
 but is only one target and does not expand.
 <!--
 TODO why was this not a problem when I didn't use the % wildcard?
@@ -315,7 +324,9 @@ all: f1.o f2.o
 	echo $@
 ```
 
-## Static Pattern Rules (Section 4.10)
+## Static Patterns
+
+### Static Pattern Rules (Section 4.10)
 Make loves C compilation. And every time it expresses its love, things get confusing. Here's the syntax for a new type of rule called a static pattern:
 ```make
 targets ...: target-pattern: prereq-patterns ...
@@ -366,7 +377,7 @@ clean:
 	rm -f foo.c bar.c
 ```
 
-## Static Pattern Rules and Filter (Section 4.10)
+### Static Pattern Rules and Filter (Section 4.10)
 `filter` can be used in Static pattern rules to match the correct files. In this example, I made up the `.raw` and `.result` extensions.
 
 ```make
@@ -472,7 +483,7 @@ all:
 ```
 
 ## Default Shell (Section 5.2)
-The default shell is `/bin/sh`. You can change this by changing the variable SHELL:
+The default shell is `/bin/sh`. You can change this by changing the variable `SHELL`:
 
 ```make
 SHELL=/bin/bash
@@ -512,7 +523,7 @@ one:
 ```
 
 ## Interrupting or killing make (Section 5.5)
-Note only: If you ctrl+c make, it will delete the newer targets it just made.
+Note only: If you `ctrl+c` make, it will delete the newer targets it just made.
 
 ## Recursive use of make (Section 5.6)
 Recursively call a makefile. Use the special $(MAKE) instead of "make"
@@ -570,7 +581,9 @@ all:
 	@echo $$two
 ```
 
-## `EXPORT_ALL_VARIABLES` (Section 5.6)
+## Variables
+
+### `EXPORT_ALL_VARIABLES` (Section 5.6)
 `EXPORT_ALL_VARIABLES` does what you might expect
 
 ```make
@@ -592,7 +605,7 @@ clean:
 	rm -rf subdir
 ```
 
-## Variables Reference (Section 6.1)
+### Variables Reference (Section 6.1)
 Reference variables using `${}` or `$()`
 
 ```make
@@ -607,7 +620,7 @@ all:
 	echo $x
 ```
 
-## Variables Flavours (Section 6.2)
+### Variables Types (Section 6.2)
 Two flavors of variables:
 - recursive (use `=`) - only looks for the variables when the command is *used*, not when it's *defined*.
 - simply expanded (use `:=`) - like normal imperative programming -- only those defined so far get expanded
@@ -626,7 +639,7 @@ all:
 	echo $(two)
 ```
 
-## Variables Expansion (Section 6.2)
+### Variables Expansion (Section 6.2)
 Simply expanded allows you to append to a variable. Recursive definitions will give an infinite loop error.
 
 ```make
@@ -639,7 +652,7 @@ all:
 	echo $(one)
 ```
 
-## Variables and `?=` (Section 6.2)
+### Variables Conditional set with `?=` (Section 6.2)
 ?= only sets variables if they have not yet been set
 
 ```make
@@ -653,7 +666,7 @@ all:
 	echo $(two)
 ```
 
-## Variables: watch out for end-of-line spaces (Section 6.2)
+### Variables: watch out for end-of-line spaces (Section 6.2)
 Spaces at the end of a line are not stripped, ones at the start are
 To make a variable with a single space, have a variable guard
 
@@ -670,8 +683,8 @@ all:
 	echo start"$(space)"end
 ```
 
-## Variables: Text replacement (Section 6.3)
-You can text replace at the end of each space seperated word using $(var:a=b)
+### Variables: Text replacement `$(var:a=b)` (Section 6.3)
+You can text replace at the end of each space seperated word using `$(var:a=b)`
 Note: don't put spaces in between anything; it will be seen as a search or replacement term
 Note: This is shorthand for using make's `patsubst` expansion function
 
@@ -685,8 +698,8 @@ all:
 	echo $(bar)
 ```
 
-## Variables: Text replacement (Section 6.3)
-You can use % as well to grab some text!
+### Variables: Text replacement % (Section 6.3)
+You can use `%` as well to grab some text!
 
 ```make
 foo := a.o b.o c.o
@@ -697,7 +710,7 @@ all:
 	echo $(bar)
 ```
 
-## Undefined Variables (Section 6.5)
+### Undefined Variables (Section 6.5)
 An undefined variable is actually an empty string!
 
 ```make
@@ -707,8 +720,8 @@ all:
 	echo $(nowhere)
 ```
 
-## Variable appending (Section 6.6)
-Use += to append
+### Variable appending (Section 6.6)
+Use `+=` to append
 
 ```make
 foo := start
@@ -717,6 +730,105 @@ foo += more
 .PHONY: all
 all:
 	echo $(foo)
+```
+
+### Target-specific variables (Section 6.10)
+Variables can be assigned for specific targets
+
+```make
+all: one = cool
+
+.PHONY: all
+all:
+	echo one is defined: $(one)
+
+.PHONY: other
+other:
+	echo one is nothing: $(one)
+```
+
+### Pattern-specific variables (Section 6.11)
+You can assign variables for specific target *patterns*
+
+```make
+%.c: one = cool
+
+blah.c:
+	echo one is defined: $(one)
+
+.PHONY: other
+other:
+	echo one is nothing: $(one)
+```
+
+### Check if a variable is empty (Section 7.2)
+```make
+nullstring =
+foo = $(nullstring) # end of line; there is a space here
+
+all:
+ifeq ($(strip $(foo)),)
+	echo "foo is empty after being stripped"
+endif
+ifeq ($(nullstring),)
+	echo "nullstring doesn't even have spaces"
+endif
+```
+
+### `ifdef` (Section 7.2)
+ifdef does not expand variable references; it just sees if something is defined at all
+
+```make
+bar =
+foo = $(bar)
+
+all:
+ifdef foo
+	echo "foo is defined"
+endif
+ifdef bar
+	echo "but bar is not"
+endif
+```
+
+### Conditional if/else (Section 7.1)
+```make
+foo = ok
+
+all:
+ifeq ($(foo), ok)
+	echo "foo equals ok"
+else
+	echo "nope"
+endif
+```
+
+### Automatic Variables: `$@`, `$^`, `$?`, etc (Section 10.5)
+There are many [automatic variables](https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html), but often only a few show up:
+
+```make
+hey: one two
+	# Outputs "hey", since this is the first target
+    # $@ - is a macro that refers to the target
+	echo $@
+
+	# Outputs all prerequisites that are newer than the target, with spaces between them
+	echo $?
+
+	# Outputs all prerequisites
+    # $^ is a macro that refers to all dependencies
+	echo $^
+
+	touch hey
+
+one:
+	touch one
+
+two:
+	touch two
+
+clean:
+	rm -f hey one two
 ```
 
 ## Command line arguments and `override` (Section 6.7)
@@ -735,7 +847,7 @@ all:
 ```
 
 ## List of commands and `define` (Section 6.8)
-"define" is actually just a list of commands. It has nothing with being a function.
+`define` is actually just a list of commands. It has nothing with being a function.
 Note here that it's a bit different than having a semi-colon between commands, because each is run
 in a seperate shell, as expected.
 
@@ -757,77 +869,6 @@ all:
 	@$(two)
 ```
 
-## Target-specific variables (Section 6.10)**
-Variables can be assigned for specific targets
-```make
-
-all: one = cool
-
-.PHONY: all
-all:
-	echo one is defined: $(one)
-
-.PHONY: other
-other:
-	echo one is nothing: $(one)
-```
-
-## Pattern-specific variables (Section 6.11)
-You can assign variables for specific target *patterns*
-
-```make
-%.c: one = cool
-
-blah.c:
-	echo one is defined: $(one)
-
-.PHONY: other
-other:
-	echo one is nothing: $(one)
-```
-
-## Conditional if/else (Section 7.1)
-```make
-foo = ok
-
-all:
-ifeq ($(foo), ok)
-	echo "foo equals ok"
-else
-	echo "nope"
-endif
-```
-
-## Check if a variable is empty (Section 7.2)
-```make
-nullstring =
-foo = $(nullstring) # end of line; there is a space here
-
-all:
-ifeq ($(strip $(foo)),)
-	echo "foo is empty after being stripped"
-endif
-ifeq ($(nullstring),)
-	echo "nullstring doesn't even have spaces"
-endif
-```
-
-##`ifdef` (Section 7.2)
-ifdef does not expand variable references; it just sees if something is defined at all
-
-```make
-bar =
-foo = $(bar)
-
-all:
-ifdef foo
-	echo "foo is defined"
-endif
-ifdef bar
-	echo "but bar is not"
-endif
-```
-
 ## Testing make flags with `findstring` and `MAKEFLAG`(Section 7.3)
 Run this example with `make -i` to see it print out the echo statement.
 
@@ -842,7 +883,10 @@ ifneq (,$(findstring i, $(MAKEFLAGS)))
 endif
 ```
 
-## Functions (Section 8.1)
+## Functions
+
+
+### Functions (Section 8.1)
 *Functions* are mainly just for text processing. Call functions with `$(fn, arguments)` or `${fn, arguments}`. You can make your own using the [call](https://www.gnu.org/software/make/manual/html_node/Call-Function.html#Call-Function) builtin function. Make has a decent amount of [builtin functions](https://www.gnu.org/software/make/manual/html_node/Functions.html).
 
 ```make
@@ -851,7 +895,6 @@ all:
 	@echo $(bar)
 ```
 
-## Functions (Section 8.1)
 If you want to replace spaces or commas, use variables
 
 ```make
@@ -865,8 +908,7 @@ all:
 	@echo $(bar)
 ```
 
-## Functions (Section 8.1)
-Do NOT include spaces in the arguments after the first. That will be seen as part of the string.
+Do **NOT** include spaces in the arguments after the first. That will be seen as part of the string.
 
 ```make
 comma := ,
@@ -884,8 +926,12 @@ all:
 # TODO 8.7 origin fn? Better in documentation?
 -->
 
-**The foreach function (Section 8.4)**
-The foreach function looks like this: `$(foreach var,list,text)`. It converts one list of words (seperated by speces) to another. `var` is set to each word in list, and `text` is expanded for each word.
+### The foreach function (Section 8.4)
+The foreach function looks like this: `$(foreach var,list,text)`.
+
+It converts one list of words (seperated by speces) to another.
+
+`var` is set to each word in list, and `text` is expanded for each word.
 This appends an exclamation after each word:
 
 ```make
@@ -898,7 +944,7 @@ all:
 	@echo $(bar)
 ```
 
-## The if function (Section 8.5)
+### The if function (Section 8.5)
 `if` checks if the first argument is nonempty. If so runs the second argument, otherwise runs the third.
 
 ```make
@@ -911,10 +957,12 @@ all:
 	@echo $(bar)
 ```
 
-## The call function (Section 8.6)
-`Call`: $(call variable,param,param)
-Sets each of the params as $(1), $(2), etc.
-$(0) is set as the variable name
+### The call function (Section 8.6)
+`Call`: `$(call variable,param,param)`
+
+Sets each of the params as `$(1)`, `$(2)`, etc.
+
+`$(0)` is set as the variable name.
 
 ```make
 sweet_new_fn = Variable Name: $(0) First: $(1) Second: $(2) Empty Variable: $(3)
@@ -924,7 +972,7 @@ all:
 	@echo $(call sweet_new_fn, go, tigers)
 ```
 
-## The shell function (Section 8.8)
+### The shell function (Section 8.8)
 shell - This calls the shell, but it replaces newlines with spaces!
 
 ```make
@@ -965,30 +1013,4 @@ blah.c:
 
 clean:
 	rm -f blah*
-```
-
-## Automatic Variables (Section 10.5)
-There are many [automatic variables](https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html), but often only a few show up:
-
-```make
-hey: one two
-	# Outputs "hey", since this is the first target
-	echo $@
-
-	# Outputs all prerequisites older than the target
-	echo $?
-
-	# Outputs all prerequisites
-	echo $^
-
-	touch hey
-
-one:
-	touch one
-
-two:
-	touch two
-
-clean:
-	rm -f hey one two
 ```
